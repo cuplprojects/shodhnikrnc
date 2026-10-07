@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* Custom blinking animation for payment badge */
+@keyframes blink-badge {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+.blink-badge {
+  animation: blink-badge 1.5s ease-in-out infinite;
+}

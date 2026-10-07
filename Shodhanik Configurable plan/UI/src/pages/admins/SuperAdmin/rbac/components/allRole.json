@@ -1,0 +1,9 @@
+[
+    "example.read",
+    "example.example-page-one.read",
+    "example.example-page-one.create",
+    "example.example-page-one.update",
+    "example.example-page-one.delete",
+    "example.example-page-one.download",
+    "example.example-page-one.upload"
+]

@@ -1,0 +1,8 @@
+This folder contains event images.
+Add your event images here:
+- event1.png
+- event2.png  
+- event3.png
+- event4.png
+
+Images should be approximately 400x300 pixels for best display.

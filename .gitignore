@@ -1,0 +1,7 @@
+obj
+bin
+.hashgen*
+.vs
+.vscode
+.zencoder
+.zenflow

@@ -1,0 +1,20 @@
+{
+  "additionalRecipients": {
+    "universityCampusHOD": {
+      "label": "University Campus (HOD)",
+      "email": "hod@university.edu"
+    },
+    "universityDean": {
+      "label": "University Dean",
+      "email": "dean@university.edu"
+    },
+    "collegeConvenor": {
+      "label": "College Convenor",
+      "email": "convenor@college.edu"
+    },
+    "collegeDean": {
+      "label": "College Dean",
+      "email": "collegedean@college.edu"
+    }
+  }
+}
