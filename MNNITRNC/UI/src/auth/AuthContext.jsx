@@ -1,9 +1,19 @@
 import { useState, useCallback } from 'react';
-import { login as loginApi } from '../api/authApi';
+import { login as loginApi, registerFacultyFederated } from '../api/authApi';
 import { setAuthToken, clearAuthToken } from '../api/apiClient';
 import { AuthContext } from './authContextObject';
 
 const STORAGE_KEY = 'mnnitrnc_auth';
+
+function decodeTokenPayload(token) {
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+  } catch {
+    return null;
+  }
+}
 
 /**
  * The JWT's `sub` claim carries the user's id (see JwtTokenService on the
@@ -11,14 +21,21 @@ const STORAGE_KEY = 'mnnitrnc_auth';
  * this is the only place the id is available client-side.
  */
 function decodeUserIdFromToken(token) {
-  if (!token) return null;
-  try {
-    const payload = token.split('.')[1];
-    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-    return decoded.sub ?? null;
-  } catch {
-    return null;
-  }
+  return decodeTokenPayload(token)?.sub ?? null;
+}
+
+/**
+ * The federated register endpoint returns only { status, token } -- unlike
+ * the password login response, it doesn't echo fullName/roles separately,
+ * since JwtTokenService already put both on the token itself (full_name
+ * claim, and ClaimTypes.Role -- "role" once JSON-decoded). Decoded here
+ * rather than asking the backend to duplicate what the token already carries.
+ */
+function decodeUserFromRncToken(token) {
+  const payload = decodeTokenPayload(token) ?? {};
+  const roleClaim = payload.role;
+  const roles = Array.isArray(roleClaim) ? roleClaim : roleClaim ? [roleClaim] : [];
+  return { fullName: payload.full_name ?? '', roles, profileComplete: false };
 }
 
 function readStoredAuth() {
@@ -57,6 +74,23 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  // Used by the Shodhanik-SSO landing page: shodhanikToken is the Shodhanik-
+  // issued JWT the user arrived with, never stored or used again past this
+  // call. The response's own token is RNC-native (minted by
+  // AuthController.RegisterFacultyFederated) and from here on is this
+  // session's one and only token, exactly like a password login's.
+  const loginFederated = useCallback(async (shodhanikToken) => {
+    const result = await registerFacultyFederated(shodhanikToken);
+    const decodedUser = decodeUserFromRncToken(result.token);
+    setAuthToken(result.token);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: result.token, ...decodedUser }));
+    setAuthState({
+      token: result.token,
+      user: { ...decodedUser, userId: decodeUserIdFromToken(result.token) },
+    });
+    return result.status;
+  }, []);
+
   // markProfileComplete lets the complete-profile page update auth state
   // in place after a successful save, without requiring the user to log
   // in again to pick up the new value.
@@ -77,7 +111,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, markProfileComplete, isLoading: false }}>
+    <AuthContext.Provider value={{ token, user, login, loginFederated, logout, markProfileComplete, isLoading: false }}>
       {children}
     </AuthContext.Provider>
   );

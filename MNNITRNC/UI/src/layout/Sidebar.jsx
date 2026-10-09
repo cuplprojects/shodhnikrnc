@@ -91,7 +91,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
       <div className={`fixed inset-y-0 left-0 z-50 md:static bg-slate-800 dark:bg-slate-950 text-white min-h-screen flex flex-col shadow-xl border-r border-slate-700 dark:border-slate-800 transition-all duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 ${isCollapsed ? 'md:w-20' : 'w-64'}`}>
       <div className={`p-4 border-b border-slate-700 dark:border-slate-800 flex items-center ${isCollapsed ? 'justify-center' : 'gap-4'} min-h-[80px]`}>
         <div className="h-10 w-10 flex items-center justify-center bg-white rounded-full p-1 shadow-md shrink-0">
-          <img src="/images/MNNIT_LOGO.png" alt="MNNIT Logo" className="h-full w-full object-contain" />
+          <img src={`${import.meta.env.BASE_URL}images/MNNIT_LOGO.png`} alt="MNNIT Logo" className="h-full w-full object-contain" />
         </div>
         {!isCollapsed && (
           <div className="flex-1 overflow-hidden transition-all duration-300 flex justify-between items-center">

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Claims;
 using API.Application.Auth;
 using API.Application.Common;
 using API.Application.Notifications;
@@ -105,6 +106,68 @@ public class AuthController(
                 false,
                 "Registration received. You can sign in now; your account will be reviewed " +
                 "by your HOD or the R&C office before you get full access."));
+    }
+
+    /// <summary>
+    /// Claims (or re-confirms) Faculty access for the Shodhanik-federated caller
+    /// of this request -- the frontend calls this right after Shodhanik SSO,
+    /// carrying Shodhanik's own JWT as the bearer token. Idempotent: a caller
+    /// who already has an RNC account (Pending or Active) just gets a fresh
+    /// RNC token back rather than a second registration.
+    /// </summary>
+    [HttpPost("faculty/federated")]
+    [Authorize]
+    public async Task<ActionResult<FederatedFacultyRegisterResponse>> RegisterFacultyFederated(CancellationToken ct)
+    {
+        var externalUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        var fullName = User.FindFirstValue("full_name");
+        if (externalUserId is null || email is null || fullName is null)
+        {
+            // Not a Shodhanik token -- it authenticated (the dual-issuer scheme
+            // accepts RNC's own tokens too) but carries none of the claims this
+            // endpoint exists to read.
+            return Forbid();
+        }
+
+        var departmentCode = User.FindFirstValue("department_code");
+        var input = new FederatedFacultyRegistrationInput(externalUserId, fullName, email, departmentCode);
+
+        ApplicationUser? user;
+        try
+        {
+            var result = await facultyRegistrations.RegisterFederatedAsync(input, ct);
+            user = await userManager.FindByIdAsync(result.UserId!.Value.ToString());
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new ProblemDetails { Title = "Registration failed", Detail = ex.Message });
+        }
+
+        if (user is null) return Unauthorized();
+
+        var roles = await userManager.GetRolesAsync(user);
+        var token = jwtTokenService.GenerateToken(user, roles);
+        var status = roles.Contains("Pending") ? "Pending" : "Active";
+
+        return Ok(new FederatedFacultyRegisterResponse(status, token));
+    }
+
+    /// <summary>
+    /// Where the Shodhanik-federated caller's own Faculty registration stands
+    /// -- polled by the "Pending HOD Approval" screen. Unlike the endpoint
+    /// above, this never creates an account: NotRegistered just means they
+    /// haven't claimed Faculty access in RNC yet.
+    /// </summary>
+    [HttpGet("faculty/federated/status")]
+    [Authorize]
+    public async Task<ActionResult<FederatedFacultyStatusResponse>> FacultyFederatedStatus(CancellationToken ct)
+    {
+        var externalUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (externalUserId is null) return Forbid();
+
+        var result = await facultyRegistrations.GetFederatedStatusAsync(externalUserId, ct);
+        return Ok(new FederatedFacultyStatusResponse(result.Status.ToString()));
     }
 
     [HttpPost("confirm-email")]

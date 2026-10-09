@@ -152,7 +152,7 @@ export default function LoginPage({ defaultIsRegistering = false }) {
     <div 
       className="min-h-screen w-full relative flex items-center justify-center bg-[#F8FAFC] dark:bg-[#030712] transition-colors duration-700 overflow-hidden font-sans"
       style={{
-        backgroundImage: "url('/images/C1.jpeg')",
+        backgroundImage: `url('${import.meta.env.BASE_URL}images/C1.jpeg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
@@ -190,7 +190,7 @@ export default function LoginPage({ defaultIsRegistering = false }) {
         {/* Branding header above card */}
         <div className="flex flex-col items-center justify-center mb-8 drop-shadow-lg">
           <div className="h-32 w-32 mb-4 flex items-center justify-center bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full shadow-xl border border-white/40 dark:border-slate-700 overflow-hidden">
-            <img src="/images/MNNIT_LOGO.png" alt="MNNIT Logo" className="h-28 w-28 object-contain drop-shadow-md" />
+            <img src={`${import.meta.env.BASE_URL}images/MNNIT_LOGO.png`} alt="MNNIT Logo" className="h-28 w-28 object-contain drop-shadow-md" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white drop-shadow-md text-center">
             MNNIT <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 drop-shadow-none">R&C</span> Portal

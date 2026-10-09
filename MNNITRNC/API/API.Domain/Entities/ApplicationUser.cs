@@ -51,4 +51,23 @@ public class ApplicationUser : IdentityUser<Guid>
     /// may exist before their ID is assigned.
     /// </remarks>
     public string? EmployeeId { get; set; }
+
+    /// <summary>
+    /// Which external system this account's identity was federated from, e.g.
+    /// "Shodhanik". Null for every RNC-native account (Staff, external
+    /// candidates, and anyone who registered directly against this system).
+    /// </summary>
+    /// <remarks>
+    /// A federated account is never also promoted into a native role: see
+    /// <see cref="ExternalUserId"/>. Shodhanik-x-RNC integration plan, §3/§7.1.
+    /// </remarks>
+    public string? ExternalSourceSystem { get; set; }
+
+    /// <summary>
+    /// This person's id in <see cref="ExternalSourceSystem"/> -- Shodhanik's
+    /// SupId for a Supervisor, or its scholar id for a Research Scholar.
+    /// Serialized to string since Shodhanik's two id schemes don't share a CLR
+    /// type. Null exactly when <see cref="ExternalSourceSystem"/> is null.
+    /// </summary>
+    public string? ExternalUserId { get; set; }
 }

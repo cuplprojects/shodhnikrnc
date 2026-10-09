@@ -14,6 +14,7 @@ public class FacultyRegistrationService(
 {
     private const string PendingRole = "Pending";
     private const string FacultyRole = "Faculty";
+    private const string ShodhanikSourceSystem = "Shodhanik";
 
     private static readonly HashSet<string> ReviewerOfficeRoles =
         new(StringComparer.OrdinalIgnoreCase) { "Dean", "DeputyRegistrar", "Superintendent", "RegularStaff", "SuperAdmin" };
@@ -60,6 +61,82 @@ public class FacultyRegistrationService(
         await userManager.AddToRoleAsync(user, PendingRole);
 
         return new RegistrationResult(RegistrationOutcome.Created, user.Id);
+    }
+
+    public async Task<RegistrationResult> RegisterFederatedAsync(
+        FederatedFacultyRegistrationInput input, CancellationToken ct = default)
+    {
+        var existing = await db.Users
+            .FirstOrDefaultAsync(u => u.ExternalSourceSystem == ShodhanikSourceSystem
+                && u.ExternalUserId == input.ExternalUserId, ct);
+        if (existing is not null)
+        {
+            return new RegistrationResult(RegistrationOutcome.AlreadyRegistered, existing.Id);
+        }
+
+        // A second account under the same email would make FindByEmailAsync
+        // (used throughout login and the password-registration path above)
+        // ambiguous about which account is "the" account for that address.
+        var emailTaken = await userManager.FindByEmailAsync(input.Email) is not null;
+        if (emailTaken)
+        {
+            throw new InvalidOperationException(
+                "Federated faculty registration failed: an account already exists for this email.");
+        }
+
+        // Unresolved rather than rejected: a Supervisor whose Shodhanik department
+        // doesn't match any RNC Department.Code still gets an RNC account and can
+        // see their own pending status, but sits outside every HOD's queue until
+        // an Office-tier reviewer (who isn't department-scoped) approves them --
+        // the same backfill-matching convention FacultyProfile.Department uses.
+        Department? department = input.DepartmentCode is { Length: > 0 } code
+            ? await db.Departments.FirstOrDefaultAsync(d => d.Code == code && d.IsActive, ct)
+            : null;
+
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(),
+            UserName = input.Email,
+            Email = input.Email,
+            FullName = input.FullName,
+            EmailConfirmed = true,
+            IsActive = true,
+            DepartmentId = department?.Id,
+            ExternalSourceSystem = ShodhanikSourceSystem,
+            ExternalUserId = input.ExternalUserId,
+        };
+
+        // No password: UserManager.CreateAsync(user) with no password argument
+        // creates the row without a PasswordHash, which is correct here --
+        // sign-in for this account is only ever the federated path, never
+        // UserManager.CheckPasswordAsync.
+        var created = await userManager.CreateAsync(user);
+        if (!created.Succeeded)
+        {
+            throw new InvalidOperationException(
+                "Federated faculty registration failed: " +
+                string.Join("; ", created.Errors.Select(e => e.Description)));
+        }
+
+        await userManager.AddToRoleAsync(user, PendingRole);
+
+        return new RegistrationResult(RegistrationOutcome.Created, user.Id);
+    }
+
+    public async Task<FederatedFacultyStatusResult> GetFederatedStatusAsync(
+        string externalUserId, CancellationToken ct = default)
+    {
+        var user = await db.Users
+            .FirstOrDefaultAsync(u => u.ExternalSourceSystem == ShodhanikSourceSystem
+                && u.ExternalUserId == externalUserId, ct);
+        if (user is null)
+        {
+            return new FederatedFacultyStatusResult(FederatedFacultyStatus.NotRegistered, null);
+        }
+
+        var isPending = await userManager.IsInRoleAsync(user, PendingRole);
+        var status = isPending ? FederatedFacultyStatus.Pending : FederatedFacultyStatus.Active;
+        return new FederatedFacultyStatusResult(status, user.Id);
     }
 
     public async Task ApproveAsync(

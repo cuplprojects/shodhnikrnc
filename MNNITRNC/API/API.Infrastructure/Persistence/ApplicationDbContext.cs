@@ -222,6 +222,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             // column backfills existing rows as false -- which, combined with the
             // IsActive check on login, would lock out every existing user.
             entity.Property(u => u.IsActive).HasDefaultValue(true);
+
+            entity.Property(u => u.ExternalSourceSystem).HasMaxLength(32);
+            entity.Property(u => u.ExternalUserId).HasMaxLength(64);
+
+            // Not a unique constraint: both columns are nullable, and MySQL has
+            // no native filtered/partial unique index, so "one RNC account per
+            // (source, external id)" is enforced in the provisioning service
+            // instead (a SELECT ... FOR UPDATE before insert). This index exists
+            // to make that lookup, and the federated-login lookup, fast.
+            entity.HasIndex(u => new { u.ExternalSourceSystem, u.ExternalUserId });
         });
         builder.Entity<IdentityRole<Guid>>().ToTable("Roles");
         builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");

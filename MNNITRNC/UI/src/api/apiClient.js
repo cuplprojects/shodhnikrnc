@@ -285,8 +285,13 @@ async function request(method, path, body, options = {}) {
     headers['Content-Type'] = 'application/json';
   }
 
-  if (authToken) {
-    headers.Authorization = `Bearer ${authToken}`;
+  // bearerToken overrides the stored RNC session token for one call -- used
+  // only by the federated Faculty registration call, which must authenticate
+  // with the Shodhanik token the user arrived on, not whatever RNC token (if
+  // any, and possibly stale) happens to be stored.
+  const bearer = options.bearerToken ?? authToken;
+  if (bearer) {
+    headers.Authorization = `Bearer ${bearer}`;
   }
 
   const response = await fetch(`${BASE_URL}${path}`, {

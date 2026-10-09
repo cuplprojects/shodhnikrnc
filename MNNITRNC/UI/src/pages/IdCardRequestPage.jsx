@@ -793,7 +793,7 @@ export default function IdCardRequestPage() {
 
           {/* Form Header Visual Banner */}
           <div className="bg-slate-900 text-white p-4 rounded-xl flex items-center justify-center gap-4 text-center shadow-md">
-            <img src="/images/MNNIT_LOGO.png" alt="MNNIT Logo" className="h-14 w-auto object-contain bg-white/10 p-1.5 rounded-lg border border-white/20 shrink-0" />
+            <img src={`${import.meta.env.BASE_URL}images/MNNIT_LOGO.png`} alt="MNNIT Logo" className="h-14 w-auto object-contain bg-white/10 p-1.5 rounded-lg border border-white/20 shrink-0" />
             <div>
               <h4 className="text-xs text-slate-300 tracking-wider uppercase font-semibold">केंद्रीय पुस्तकालय / CENTRAL LIBRARY</h4>
               <h3 className="text-sm font-bold tracking-wide">MOTILAL NEHRU NATIONAL INSTITUTE OF TECHNOLOGY ALLAHABAD - PRAYAGRAJ</h3>
@@ -1332,7 +1332,7 @@ export default function IdCardRequestPage() {
             <div className="lg:col-span-7 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm space-y-6">
 
               <div className="flex items-center justify-center gap-4 border-b border-slate-200 dark:border-slate-700 pb-4 text-center">
-                <img src="/images/MNNIT_LOGO.png" alt="MNNIT Logo" className="h-16 w-auto object-contain shrink-0" />
+                <img src={`${import.meta.env.BASE_URL}images/MNNIT_LOGO.png`} alt="MNNIT Logo" className="h-16 w-auto object-contain shrink-0" />
                 <div>
                   <h4 className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">केंद्रीय पुस्तकालय / CENTRAL LIBRARY</h4>
                   <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">MOTILAL NEHRU NATIONAL INSTITUTE OF TECHNOLOGY ALLAHABAD</h3>

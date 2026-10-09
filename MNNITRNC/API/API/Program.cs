@@ -36,6 +36,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -196,6 +197,14 @@ builder.Services.AddScoped<IResearchProposalService, ResearchProposalService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
+// Shodhanik is the only external issuer RNC trusts today -- see the
+// Shodhanik-x-RNC integration plan, Phase 2. Its signing key differs from
+// RNC's own, so a single IssuerSigningKey won't do; IssuerSigningKeyResolver
+// below picks the right key by matching the token's own issuer claim.
+var shodhanikSection = builder.Configuration.GetSection("Shodhanik:Jwt");
+var rncSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!));
+var shodhanikSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(shodhanikSection["SigningKey"]!));
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -210,9 +219,12 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSection["Issuer"],
-            ValidAudience = jwtSection["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!)),
+            ValidIssuers = [jwtSection["Issuer"], shodhanikSection["Issuer"]],
+            ValidAudiences = [jwtSection["Audience"], shodhanikSection["Audience"]],
+            IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
+                securityToken is JwtSecurityToken jwt && jwt.Issuer == shodhanikSection["Issuer"]
+                    ? [shodhanikSigningKey]
+                    : [rncSigningKey],
         };
     });
 

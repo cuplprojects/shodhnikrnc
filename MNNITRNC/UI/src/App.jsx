@@ -93,6 +93,7 @@ import OverheadDashboardPage from './pages/OverheadDashboardPage';
 import NomineeAvailabilityPage from './pages/recruitment/NomineeAvailabilityPage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
 import RegistrationPendingPage from './pages/RegistrationPendingPage';
+import ShodhanikSsoLandingPage from './auth/ShodhanikSsoLandingPage';
 import PendingFacultyRegistrationsPage from './pages/PendingFacultyRegistrationsPage';
 
 import { Toaster } from 'react-hot-toast';
@@ -108,6 +109,11 @@ export default function App() {
         <Route path="/register" element={<LoginPage defaultIsRegistering={true} />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* Where the gateway sends a Shodhanik Supervisor after SSO -- see the
+            Shodhanik-x-RNC integration plan. Public: the whole point of this
+            route is to establish the RNC session, so it can't require one. */}
+        <Route path="/sso/shodhanik" element={<ShodhanikSsoLandingPage />} />
 
         {/* User manuals -- public, screenshot-based slide decks generated
             from docs/manual/*.pdf, viewable without signing in so a link can
