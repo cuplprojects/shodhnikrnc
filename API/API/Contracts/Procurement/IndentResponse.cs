@@ -1,0 +1,45 @@
+using API.Application.Documents;
+using API.Domain.Enums;
+
+namespace API.Contracts.Procurement;
+
+public record IndentResponse(
+    Guid Id,
+    Guid ProjectId,
+    Guid BudgetHeadId,
+    Guid WorkflowInstanceId,
+    string Name,
+    decimal EstimatedCost,
+    GemAvailability GemAvailability,
+    ProcurementTier Tier,
+    WorkflowStage CurrentStage,
+    DateTimeOffset CreatedAt,
+    string? PaymentRouting = "Party Payment",
+    decimal? MiscellaneousExpenditure = null,
+    string? BiddingNumber = null,
+    DateOnly? BidPublicationDate = null,
+    string? PurchaseOrderNumber = null,
+    DateOnly? PurchaseOrderDate = null,
+    string? BindingLocation = "Prayagraj",
+    string? ComparativeStatementNumber = null,
+    bool ComparativeStatementSigned = false,
+    string? OriginalBillReference = null,
+    string? BillNo = null,
+    string? BillNumber = null,
+    decimal? BillAmount = null,
+    DateOnly? GenerationDate = null,
+    DateOnly? ItemReceivingDate = null,
+    string? BillProcessStatus = null,
+    bool StockEntryConfirmed = false,
+    string? EWayBillNumber = null,
+    string? StockBookPage = null,
+    string? StockDescription = null,
+    string? StockQuantity = null,
+    string? StockActualCost = null,
+    string? StockCondition = null,
+    string? MeasurementBookNumber = null,
+    string? BillFileUrl = null,
+    string? EWayBillFileUrl = null,
+    string? SatisfactoryCertificateFileUrl = null,
+    string? IndentNumber = null);
+
