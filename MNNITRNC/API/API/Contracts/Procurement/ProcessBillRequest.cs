@@ -1,0 +1,30 @@
+namespace API.Contracts.Procurement;
+
+public record ProcessBillRequest(
+    string OriginalBillReference,
+    bool StockEntryConfirmed,
+    string? EWayBillNumber,
+    string? MeasurementBookNumber,
+    string? StockBookPage,
+    string? StockDescription,
+    string? StockQuantity,
+    string? StockActualCost,
+    string? StockCondition,
+    decimal? MiscellaneousExpenditure = null,
+    string? PurchaseOrderNumber = null,
+    DateOnly? PurchaseOrderDate = null,
+    string? BindingLocation = "Prayagraj",
+    string? ComparativeStatementNumber = null,
+    bool ComparativeStatementSigned = false,
+    string? EWayBillPartA = null,
+    string? EWayBillPartB = null,
+    string? BillNumber = null,
+    string? BillNo = null,
+    decimal? BillAmount = null,
+    DateOnly? GenerationDate = null,
+    DateOnly? ItemReceivingDate = null,
+    string? BillProcessStatus = null,
+    string? BillFileUrl = null,
+    string? EWayBillFileUrl = null,
+    string? SatisfactoryCertificateFileUrl = null);
+

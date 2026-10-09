@@ -1,0 +1,56 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace API.Infrastructure.Persistence.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddWorkflowInstanceAndDocumentIndexes : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AlterColumn<string>(
+                name: "OwnerType",
+                table: "Documents",
+                type: "varchar(255)",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "longtext")
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .OldAnnotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkflowInstances_RequestType_RequestId",
+                table: "WorkflowInstances",
+                columns: new[] { "RequestType", "RequestId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Documents_OwnerType_OwnerId",
+                table: "Documents",
+                columns: new[] { "OwnerType", "OwnerId" });
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropIndex(
+                name: "IX_WorkflowInstances_RequestType_RequestId",
+                table: "WorkflowInstances");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Documents_OwnerType_OwnerId",
+                table: "Documents");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "OwnerType",
+                table: "Documents",
+                type: "longtext",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "varchar(255)")
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .OldAnnotation("MySql:CharSet", "utf8mb4");
+        }
+    }
+}
